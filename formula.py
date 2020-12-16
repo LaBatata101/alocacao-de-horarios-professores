@@ -27,6 +27,9 @@ class Atom(Formula):
     def __str__(self):
         return str(self.name)
 
+    def __repr__(self):
+        return f"Atom(name={self.name})"
+
     def __eq__(self, other):
         return isinstance(other, Atom) and other.name == self.name
 
