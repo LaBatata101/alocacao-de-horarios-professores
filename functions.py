@@ -64,8 +64,14 @@ def atoms(formula):
 
 def number_of_atoms(formula):
     """Returns the number of distinct atoms occurring in a formula."""
-    pass
-    # ======== YOUR CODE HERE ========
+    if isinstance(formula, Atom):
+        return 1
+
+    if isinstance(formula, Not):
+        return number_of_atoms(formula.inner)
+
+    if isinstance(formula, (Implies, And, Or)):
+        return number_of_atoms(formula.right) + number_of_atoms(formula.left)
 
 
 def number_of_connectives(formula):
