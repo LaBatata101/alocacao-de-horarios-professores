@@ -3,6 +3,7 @@ do some computation on its syntactic structure. """
 
 
 from formula import Not, Atom, Implies, And, Or
+from itertools import product
 
 
 def length(formula):
@@ -103,3 +104,8 @@ def substitution(formula, old_subformula, new_subformula):
         formula.left = substitution(formula.left, old_subformula, new_subformula)
         formula.right = substitution(formula.right, old_subformula, new_subformula)
         return formula
+
+
+def valuations(atoms):
+    d = {a.name: [True, False] for a in atoms}
+    return [dict(zip(d, v)) for v in product(*d.values())]
