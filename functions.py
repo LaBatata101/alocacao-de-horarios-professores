@@ -106,6 +106,7 @@ def substitution(formula, old_subformula, new_subformula):
         return formula
 
 
-def valuations(atoms):
-    d = {a.name: [True, False] for a in atoms}
-    return [dict(zip(d, v)) for v in product(*d.values())]
+def valuations(atomics):
+    possible_values_for_atom = {atom.name: [True, False] for atom in atomics}
+    return [dict(zip(possible_values_for_atom, combination))
+            for combination in product(*possible_values_for_atom.values())]
