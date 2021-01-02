@@ -47,6 +47,9 @@ class Implies(Formula):
     def __str__(self):
         return "(" + self.left.__str__() + " " + u"\u2192" + " " + self.right.__str__() + ")"
 
+    def __repr__(self):
+        return str(self)
+
     def __eq__(self, other):
         return isinstance(other, Implies) and other.left == self.left and other.right == self.right
 
@@ -62,6 +65,9 @@ class Not(Formula):
 
     def __str__(self):
         return "(" + u"\u00ac" + str(self.inner) + ")"
+
+    def __repr__(self):
+        return str(self)
 
     def __eq__(self, other):
         return isinstance(other, Not) and other.inner == self.inner
@@ -80,6 +86,9 @@ class And(Formula):
     def __str__(self):
         return "(" + self.left.__str__() + " " + u"\u2227" + " " + self.right.__str__() + ")"
 
+    def __repr__(self):
+        return str(self)
+
     def __eq__(self, other):
         return isinstance(other, And) and other.left == self.left and other.right == self.right
 
@@ -96,6 +105,9 @@ class Or(Formula):
 
     def __str__(self):
         return "(" + self.left.__str__() + " " + u"\u2228" + " " + self.right.__str__() + ")"
+
+    def __repr__(self):
+        return str(self)
 
     def __eq__(self, other):
         return isinstance(other, Or) and other.left == self.left and other.right == self.right
