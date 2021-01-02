@@ -74,8 +74,7 @@ def is_logical_equivalence(formula1, formula2):
 
 def is_valid(formula):
     """Returns True if formula is a logically valid (tautology). Otherwise, it returns False"""
-    pass
-    # ======== YOUR CODE HERE ========
+    return is_satisfiable(Not(formula)) is False
 
 
 def is_satisfiable(formula):
