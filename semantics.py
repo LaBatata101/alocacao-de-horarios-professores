@@ -64,8 +64,12 @@ def is_logical_consequence(premises, conclusion):  # function TT-Entails? in the
 
 def is_logical_equivalence(formula1, formula2):
     """Checks whether formula1 and formula2 are logically equivalent."""
-    pass
-    # ======== YOUR CODE HERE ========
+    v = valuations(atoms(formula1).union(atoms(formula2)))
+
+    for k in v:
+        if truth_value(formula1, k) != truth_value(formula2, k):
+            return False
+    return True
 
 
 def is_valid(formula):
