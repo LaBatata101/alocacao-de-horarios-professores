@@ -306,3 +306,20 @@ def create_courses_schedules(all_possible_valuations: List[List[Dict[str, bool]]
                     if not is_day_picked(day, days_taken, semester_str):
                         days_taken[semester_str][course_name].append(day)
     return days_taken
+
+
+
+def get_course_period(course_name: str) -> str:
+    periods = {"1": "8-10", "2": "10-12"}
+    name, period = course_name.split("_")
+    return f"{periods[period]} -> {name}"
+
+
+def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> None:
+    for semester, courses_schedules in all_courses_schedules.items():
+        print(f"s{semester}")
+        for course_name in sorted(courses_schedules.keys()):
+            days = courses_schedules[course_name]
+            if days:  # list of days is not empty
+                print(f"{get_course_period(course_name)} :: {', '.join(days)}")
+        print()
