@@ -218,3 +218,50 @@ def get_prof_courses(professor_name: str, professor_possibles_schedules: Dict[st
                 courses_schedules_of_professor[course_name] = courses_schedules[course_name]
 
     return courses_schedules_of_professor
+
+
+
+def remove_professors_collisions(professor_possibles_schedules: Dict[str, List[Dict[str, bool]]],
+                                 schedules_by_semester: Dict[str, Dict[str, List[str]]]) -> None:
+    """
+    If in schedules_by_semester there is a schedule for a professor to teach two different courses in the same period
+    and in the same day of week for different semesters, remove this schedule collision.
+    """
+    for prof_name in professor_possibles_schedules:
+        professor_courses_schedules = get_prof_courses(prof_name, professor_possibles_schedules, schedules_by_semester)
+        courses_names = list(professor_courses_schedules.keys())
+
+        # search for professor schedules collisions in schedules_by_semester
+        for i in range(len(courses_names) - 1):
+            period_course_i = courses_names[i].split("_")[1]
+
+            for day in professor_courses_schedules[courses_names[i]]:
+                for j in range(i + 1, len(courses_names)):
+                    period_course_j = courses_names[j].split("_")[1]
+                    if period_course_i == period_course_j and day in professor_courses_schedules[courses_names[j]]:
+                        # print(f"{prof_name = } {courses_names[i]} -> {courses_names[j] = } {day = }")
+                        solve_collision(courses_names[j], courses_names[i], day, schedules_by_semester)
+
+
+def solve_collision(course_name: str, conflicting_course_name: str, day: str,
+                    schedules_by_semester: Dict[str, Dict[str, List[str]]]) -> None:
+    """
+    Solve the schedule collision of course_name and conflicting_course_name.
+    """
+    conflicting_semester_index = ''
+    semester_index = ''
+
+    for semester, courses_schedules in schedules_by_semester.items():
+        if course_name in courses_schedules:
+            semester_index = semester
+            course_schedules = courses_schedules[course_name]
+
+        if conflicting_course_name in courses_schedules:
+            conflicting_semester_index = semester
+            conflicting_course_schedules = courses_schedules[conflicting_course_name]
+
+    # remove the conflicting day from the course with more days booked
+    if len(conflicting_course_schedules) > len(course_schedules):
+        schedules_by_semester[conflicting_semester_index][conflicting_course_name].remove(day)
+    else:
+        schedules_by_semester[semester_index][course_name].remove(day)
