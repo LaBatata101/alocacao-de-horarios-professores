@@ -201,3 +201,20 @@ def satisfiable_valuations(logic_formula: Union[And, Or]) -> List[Dict[str, bool
         if truth_value(logic_formula, v):
             solution.append(v)
     return solution
+
+
+
+def get_prof_courses(professor_name: str, professor_possibles_schedules: Dict[str, List[Dict[str, bool]]],
+                     schedules_by_semester: Dict[str, Dict[str, List[str]]]) -> Dict[str, List[str]]:
+    """
+    Return a dictionare with the professor name as key and a list of courses that he/she teaches as value.
+    """
+    courses_names = [course_name for course_name in professor_possibles_schedules[professor_name][0]]
+    courses_schedules_of_professor = {}
+
+    for course_name in courses_names:
+        for courses_schedules in schedules_by_semester.values():
+            if course_name in courses_schedules:
+                courses_schedules_of_professor[course_name] = courses_schedules[course_name]
+
+    return courses_schedules_of_professor
