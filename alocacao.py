@@ -1,3 +1,5 @@
+import time
+
 from functions import atoms, valuations
 from typing import Any, Dict, List, Union
 
@@ -323,3 +325,29 @@ def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> No
             if days:  # list of days is not empty
                 print(f"{get_course_period(course_name)} :: {', '.join(days)}")
         print()
+
+
+
+def main():
+    courses_list = parse_input(multiline_input("INPUT: "))
+
+    start = time.time()
+
+    valuations_for_period_restriction = [satisfiable_valuations(formula)
+                                         for formula in period_restriction_for_all_semesters_formula(courses_list)]
+    valuations_for_professor_restriction = {name: satisfiable_valuations(formula)
+                                            for name, formula in professor_restriction_formula(courses_list).items()}
+
+    courses_schedules = create_courses_schedules(valuations_for_period_restriction)
+    remove_professors_collisions(valuations_for_professor_restriction, courses_schedules)
+
+    print("\nOUTPUT:")
+    print_solution(courses_schedules)
+
+    end = time.time()
+
+    print(f"\nTOTAL TIME: {end - start}")
+
+
+if __name__ == "__main__":
+    main()
