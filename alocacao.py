@@ -151,3 +151,40 @@ def period_restriction_for_all_semesters_formula(courses: List[Course]) -> List[
             continue
         final_formula.append(period_restriction(atomics_by_semester[s]))
     return final_formula
+
+
+
+def professor_restriction_formula(courses: List[Course]) -> Dict[str, Union[And, Or]]:
+    """
+    Take a list of Course's objects and create a logic formula that doesn't allow
+    a professor to teach two different Course's at the same period. In the
+    case of this code there will be two periods, the 1º period is from 8 to 10,
+    and the 2º period is from 10 to 12.
+
+    Return dictionare with the professor name as key and the logic formula as value.
+    Example:
+        {'Carlos':
+        ~(Circuitos Digitais_1 ^ Fundamentos de Programação_1) ^ ~(Circuitos Digitais_2 ^ Fundamentos de Programação_2)
+        ^ (Circuitos Digitais_1 ^ Fundamentos de Programação_2) v (Circuitos Digitais_2 ^ Fundamentos de Programação_1)}
+    """
+    courses_with_same_professor: Dict[str, List[Any]] = {}
+    for i in range(len(courses)):
+        if courses[i].professor not in courses_with_same_professor:
+            courses_with_same_professor[courses[i].professor] = []
+        courses_with_same_professor[courses[i].professor].append(courses[i].name)
+
+    for professor in courses_with_same_professor:
+        periods = []
+        for course in courses_with_same_professor[professor]:
+            for p in (1, 2):
+                periods.append(Atom(f"{course}_{p}"))
+        courses_with_same_professor[professor] = periods
+
+    formulas: Dict[str, Union[And, Or]] = {}
+    for professor in courses_with_same_professor:
+        if len(courses_with_same_professor[professor]) == 2:  # XXX: for the sake of gambiarra
+            formulas[professor] = Or(courses_with_same_professor[professor][0],
+                                     courses_with_same_professor[professor][1])
+            continue
+        formulas[professor] = period_restriction(courses_with_same_professor[professor])
+    return formulas
