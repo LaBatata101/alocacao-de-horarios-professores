@@ -1,11 +1,11 @@
 import time
 
+from itertools import combinations
 from functions import atoms, valuations
 from typing import Any, Dict, List, Union
 
 from semantics import truth_value
 from formula import And, Atom, Not, Or
-from typing import List, Dict, Union, Any
 
 
 class Course:
@@ -73,7 +73,6 @@ def parse_input(text: List[str]) -> List[Course]:
     return courses
 
 
-
 def and_all(logic_formulas) -> And:
     """
     Receive a list of logic formulas and apply the "and" logic operator on them.
@@ -92,7 +91,6 @@ def or_all(logic_formulas) -> Or:
     for i in range(1, len(logic_formulas)):
         ors = Or(ors, logic_formulas[i])
     return ors
-
 
 
 def dont_allow_on_the_same_period(atomics: List[Atom]) -> Union[And, List[Atom]]:
@@ -310,7 +308,6 @@ def create_courses_schedules(all_possible_valuations: List[List[Dict[str, bool]]
     return days_taken
 
 
-
 def get_course_period(course_name: str) -> str:
     periods = {"1": "8-10", "2": "10-12"}
     name, period = course_name.split("_")
@@ -325,7 +322,6 @@ def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> No
             if days:  # list of days is not empty
                 print(f"{get_course_period(course_name)} :: {', '.join(days)}")
         print()
-
 
 
 def main():
