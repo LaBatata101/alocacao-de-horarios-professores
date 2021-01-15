@@ -265,3 +265,44 @@ def solve_collision(course_name: str, conflicting_course_name: str, day: str,
         schedules_by_semester[conflicting_semester_index][conflicting_course_name].remove(day)
     else:
         schedules_by_semester[semester_index][course_name].remove(day)
+
+
+def is_day_picked(day: str, courses_schedules: Dict[str, Dict[str, List[str]]], semester: str):
+    """
+    The day is picked if it appears two times in course_schedules for a specific semester.
+    """
+    all_booked_days = [day for days_booked in courses_schedules[semester].values() for day in days_booked]
+    return all_booked_days.count(day) == 2
+
+
+def create_courses_schedules(all_possible_valuations: List[List[Dict[str, bool]]]) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Take a list of valuations and returns a dictionare with the semester as key and another dictionare
+    as value containing the name of the course as a key and a list of days schedule for that course.
+    Example:
+    >>> create_courses_schedules([[{'Fundamentos de Programação_1': True, 'Fundamentos de Programação_2': False,
+    ...                             'Circuitos Digitais_2': True, 'Circuitos Digitais_1': False},
+    ...                            {'Fundamentos de Programação_1': False, 'Fundamentos de Programação_2': True,
+    ...                             'Circuitos Digitais_2': False, 'Circuitos Digitais_1': True}]])
+    {'1': {'Circuitos Digitais_1': ['segunda-feira'],
+           'Circuitos Digitais_2': ['terça-feira'],
+           'Fundamentos de Programação_1': ['terça-feira'],
+           'Fundamentos de Programação_2': ['segunda-feira']}}
+    """
+    days_taken: Dict[str, Dict[str, List[str]]] = {}
+    days = ("segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira")
+    for semester, possible_valuations_for_semester in enumerate(all_possible_valuations):
+        semester_str = f"{semester + 1}"
+        if semester_str not in days_taken:
+            days_taken[semester_str] = {}
+
+        for i, schedule in enumerate(possible_valuations_for_semester):
+            for course_name, value in schedule.items():
+                if value:
+                    if course_name not in days_taken[semester_str]:
+                        days_taken[semester_str][course_name] = []
+
+                    day = days[i % len(days)]
+                    if not is_day_picked(day, days_taken, semester_str):
+                        days_taken[semester_str][course_name].append(day)
+    return days_taken
