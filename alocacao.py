@@ -1,4 +1,7 @@
-from itertools import combinations
+from functions import atoms, valuations
+from typing import Any, Dict, List, Union
+
+from semantics import truth_value
 from formula import And, Atom, Not, Or
 from typing import List, Dict, Union, Any
 
@@ -188,3 +191,13 @@ def professor_restriction_formula(courses: List[Course]) -> Dict[str, Union[And,
             continue
         formulas[professor] = period_restriction(courses_with_same_professor[professor])
     return formulas
+
+
+
+def satisfiable_valuations(logic_formula: Union[And, Or]) -> List[Dict[str, bool]]:
+    "Returns a list of valuations that satisfies the formula."
+    solution = []
+    for v in valuations(atoms(logic_formula)):
+        if truth_value(logic_formula, v):
+            solution.append(v)
+    return solution
