@@ -1,3 +1,4 @@
+from formula import And, Atom, Not, Or
 from typing import List, Dict, Union, Any
 
 
@@ -64,3 +65,24 @@ def parse_input(text: List[str]) -> List[Course]:
                 courses.append(course)
 
     return courses
+
+
+
+def and_all(logic_formulas) -> And:
+    """
+    Receive a list of logic formulas and apply the "and" logic operator on them.
+    """
+    ands = logic_formulas[0]
+    for i in range(1, len(logic_formulas)):
+        ands = And(ands, logic_formulas[i])
+    return ands
+
+
+def or_all(logic_formulas) -> Or:
+    """
+    Receive a list of logic formulas and apply the "or" logic operator on them.
+    """
+    ors = logic_formulas[0]
+    for i in range(1, len(logic_formulas)):
+        ors = Or(ors, logic_formulas[i])
+    return ors
