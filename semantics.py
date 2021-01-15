@@ -77,11 +77,47 @@ def is_valid(formula):
     return is_satisfiable(Not(formula)) is False
 
 
+def sat(formula, _atoms, interpretation):
+    if len(_atoms) == 0:
+        if truth_value(formula, interpretation):
+            return interpretation
+        return False
+
+    _atom = _atoms.pop()
+    interpretation1 = interpretation.copy()
+    interpretation2 = interpretation.copy()
+
+    interpretation1.update({_atom: True})
+    interpretation2.update({_atom: False})
+    result = sat(formula, _atoms.copy(), interpretation1)
+    if result is not False:
+        return result
+    return sat(formula, _atoms.copy(), interpretation2)
+
+
+def preprocess_formula(formula):
+    if isinstance(formula, Atom):
+        return {formula.name: True}
+
+    if isinstance(formula, Not):
+        if isinstance(formula.inner, Atom):
+            return {formula.inner.name: False}
+
+    if isinstance(formula, And):
+        left = preprocess_formula(formula.left)
+        right = preprocess_formula(formula.right)
+        left.update(right)
+
+        return left
+
+    return {}
+
+
 def is_satisfiable(formula):
     """Checks whether formula is satisfiable.
-    In other words, if the input formula is satisfiable, it returns an interpretation that assigns true to the formula.
-    Otherwise, it returns False."""
-    pass
-    # ======== YOUR CODE HERE ========
-
-
+    In other words, if the input formula is satisfiable, it returns an interpretation that assigns
+    true to the formula. Otherwise, it returns False."""
+    interpretation = preprocess_formula(formula)
+    atoms_names = {a.name for a in atoms(formula)}
+    list_atoms = atoms_names - set(interpretation.keys())
+    return sat(formula, list_atoms, interpretation)
