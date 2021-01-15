@@ -94,6 +94,9 @@ def or_all(logic_formulas) -> Or:
 
 
 def dont_allow_on_the_same_period(atomics: List[Atom]) -> Union[And, List[Atom]]:
+    """
+    Return a logic formula that doesn't allow two different courses to be at the same period.
+    """
     if len(atomics) <= 1:
         return atomics
 
@@ -127,10 +130,10 @@ def period_restriction(courses_atoms: List[Atom]) -> And:
 
 def period_restriction_for_all_semesters_formula(courses: List[Course]) -> List[Union[And, Or]]:
     """
-    Take a list of Course objects and create a logic formula that doesn't allow
-    different Course's to be at the same period on the same semester. In the
-    case of this code there will be two periods, the 1º period is from 8 to 10,
-    and the 2º period is from 10 to 12.
+    Take a list of Course objects and creates a logic formula that only allows
+    two different Course objects to be at different period on the same semester.
+    In the case of this code there will be two periods, the 1º period is
+    from 8 to 10, and the 2º period is from 10 to 12.
 
     Return a list of logic formulas, each position in the list represents a semester.
     Example of a possible logic formula of any semester:
