@@ -58,8 +58,7 @@ def is_logical_consequence(premises, conclusion):  # function TT-Entails? in the
     """Returns True if the conclusion is a logical consequence of the set of premises. Otherwise,
     it returns False.
     """
-    pass
-    # ======== YOUR CODE HERE ========
+    return is_satisfiable(And(premises, Not(conclusion))) is False
 
 
 def is_logical_equivalence(formula1, formula2):
