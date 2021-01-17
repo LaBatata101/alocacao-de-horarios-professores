@@ -137,13 +137,14 @@ def period_restriction_for_all_semesters_formula(courses: List[Course]) -> List[
 
     Return a list of logic formulas, each position in the list represents a semester.
     Example of a possible logic formula of any semester:
-        ~(Circuitos Digitais_1 ^ Fundamentos de Programação_1) ^ ~(Circuitos Digitais_2 ^ Fundamentos de Programação_2) ^
-        (Circuitos Digitais_1 ^ Fundamentos de Programação_2) v (Circuitos Digitais_2 ^ Fundamentos de Programação_1)
+        ~(Circuitos Digitais_1 ^ Fundamentos de Programação_1) ^ ~(Circuitos Digitais_2 ^ Fundamentos de Programação_2)
+        ^ (Circuitos Digitais_1 ^ Fundamentos de Programação_2) v (Circuitos Digitais_2 ^ Fundamentos de Programação_1)
     """
     atomics_by_semester: Dict[str, List[Atom]] = {}
     for c in courses:
         atomics = []
-        for p in (1, 2):  # create a Atom representing the 1º and 2º period of a Course
+        # create a Atom representing the 1º and 2º period that the Course can be taught
+        for p in (1, 2):
             atomics.append(Atom(f"{c.name}_{p}"))
 
         if c.semester not in atomics_by_semester:
@@ -152,12 +153,11 @@ def period_restriction_for_all_semesters_formula(courses: List[Course]) -> List[
 
     final_formula: List[Union[And, Or]] = []
     for s in atomics_by_semester:
-        if len(atomics_by_semester[s]) == 2:  # XXX: for the sake of gambiarra
+        if len(atomics_by_semester[s]) == 2:  # if there's only one course in the semester
             final_formula.append(Or(atomics_by_semester[s][0], atomics_by_semester[s][1]))
             continue
         final_formula.append(period_restriction(atomics_by_semester[s]))
     return final_formula
-
 
 
 def professor_restriction_formula(courses: List[Course]) -> Dict[str, Union[And, Or]]:
@@ -182,19 +182,19 @@ def professor_restriction_formula(courses: List[Course]) -> Dict[str, Union[And,
     for professor in courses_with_same_professor:
         periods = []
         for course in courses_with_same_professor[professor]:
+            # create a Atom representing the 1º and 2º period that the Course can be taught
             for p in (1, 2):
                 periods.append(Atom(f"{course}_{p}"))
         courses_with_same_professor[professor] = periods
 
     formulas: Dict[str, Union[And, Or]] = {}
     for professor in courses_with_same_professor:
-        if len(courses_with_same_professor[professor]) == 2:  # XXX: for the sake of gambiarra
+        if len(courses_with_same_professor[professor]) == 2:  # if the professor only teaches one course
             formulas[professor] = Or(courses_with_same_professor[professor][0],
                                      courses_with_same_professor[professor][1])
             continue
         formulas[professor] = period_restriction(courses_with_same_professor[professor])
     return formulas
-
 
 
 def satisfiable_valuations(logic_formula: Union[And, Or]) -> List[Dict[str, bool]]:
@@ -204,7 +204,6 @@ def satisfiable_valuations(logic_formula: Union[And, Or]) -> List[Dict[str, bool
         if truth_value(logic_formula, v):
             solution.append(v)
     return solution
-
 
 
 def get_prof_courses(professor_name: str, professor_possibles_schedules: Dict[str, List[Dict[str, bool]]],
@@ -221,7 +220,6 @@ def get_prof_courses(professor_name: str, professor_possibles_schedules: Dict[st
                 courses_schedules_of_professor[course_name] = courses_schedules[course_name]
 
     return courses_schedules_of_professor
-
 
 
 def remove_professors_collisions(professor_possibles_schedules: Dict[str, List[Dict[str, bool]]],
@@ -280,8 +278,9 @@ def is_day_picked(day: str, courses_schedules: Dict[str, Dict[str, List[str]]], 
 
 def create_courses_schedules(all_possible_valuations: List[List[Dict[str, bool]]]) -> Dict[str, Dict[str, List[str]]]:
     """
-    Take a list of valuations and returns a dictionare with the semester as key and another dictionare
-    as value containing the name of the course as a key and a list of days schedule for that course.
+    Take a list of valuations that makes the period restriction true and returns a dictionare with
+    the semester as key and another dictionare as value containing the name of the course as a key
+    and a list of days schedule for that course.
     Example:
     >>> create_courses_schedules([[{'Fundamentos de Programação_1': True, 'Fundamentos de Programação_2': False,
     ...                             'Circuitos Digitais_2': True, 'Circuitos Digitais_1': False},
