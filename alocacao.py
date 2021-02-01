@@ -322,6 +322,22 @@ def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> No
         print()
 
 
+def is_professor_schedule_colliding(course_name: str, day: str, professor_valuation: Dict[str, List[Dict[str, bool]]],
+                                    schedules: Dict[str, Dict[str, List[str]]]) -> bool:
+    """
+    Check if day for course_name is not colliding with other courses.
+    Return True if there's collision, False otherwise.
+    """
+    for prof_name in professor_valuation:
+        professor_courses = get_prof_courses(prof_name, professor_valuation, schedules)
+        if course_name in professor_courses:
+            period = course_name.split("_")[1]
+            for name in professor_courses:
+                if period == name.split("_")[1] and day in professor_courses[name]:
+                    return True
+    return False
+
+
 def main():
     courses_list = parse_input(multiline_input("INPUT: "))
 
