@@ -240,7 +240,6 @@ def remove_professors_collisions(professor_possibles_schedules: Dict[str, List[D
                 for j in range(i + 1, len(courses_names)):
                     period_course_j = courses_names[j].split("_")[1]
                     if period_course_i == period_course_j and day in professor_courses_schedules[courses_names[j]]:
-                        # print(f"{prof_name = } {courses_names[i]} -> {courses_names[j] = } {day = }")
                         solve_collision(courses_names[j], courses_names[i], day, schedules_by_semester)
 
 
@@ -255,17 +254,14 @@ def solve_collision(course_name: str, conflicting_course_name: str, day: str,
     for semester, courses_schedules in schedules_by_semester.items():
         if course_name in courses_schedules:
             semester_index = semester
-            course_schedules = courses_schedules[course_name]
 
         if conflicting_course_name in courses_schedules:
             conflicting_semester_index = semester
-            conflicting_course_schedules = courses_schedules[conflicting_course_name]
 
-    # remove the conflicting day from the course with more days booked
-    if len(conflicting_course_schedules) > len(course_schedules):
-        schedules_by_semester[conflicting_semester_index][conflicting_course_name].remove(day)
-    else:
-        schedules_by_semester[semester_index][course_name].remove(day)
+    # clear both list of days that have conflicts and leave for truncate_to_4hours_per_week
+    # to populate them appropriately later for the sake of my sanity
+    schedules_by_semester[conflicting_semester_index][conflicting_course_name].clear()
+    schedules_by_semester[semester_index][course_name].clear()
 
 
 def is_day_picked(day: str, courses_schedules: Dict[str, Dict[str, List[str]]], semester: str):
