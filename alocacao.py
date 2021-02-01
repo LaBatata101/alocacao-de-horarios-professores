@@ -338,6 +338,31 @@ def is_professor_schedule_colliding(course_name: str, day: str, professor_valuat
     return False
 
 
+def find_best_valuations(all_possible_valuations: List[List[Dict[str, bool]]]) -> List[List[Dict[str, bool]]]:
+    """
+    Return a list with valuations which each Atom that is True only appears once.
+    """
+    course_names = []  # store the name of the course that has been processed
+    days_taken = {}
+    for semester, possible_valuations in enumerate(all_possible_valuations):
+        if semester not in days_taken:
+            days_taken[semester] = []
+
+        for valuation in possible_valuations:
+            # store only one time every Atom that is True in days_taken.
+            # in semesters with more than 4 courses a Atom can appear True
+            # more than once in different valuations
+            if len(valuation) > 4:  # semester with more than 2 courses
+                for name, val in valuation.items():
+                    if val and name not in course_names:
+                        days_taken[semester].append(valuation)
+                        course_names.append(name)
+            else:
+                days_taken[semester].append(valuation)
+
+    return list(days_taken.values())
+
+
 def main():
     courses_list = parse_input(multiline_input("INPUT: "))
 
