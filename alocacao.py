@@ -363,6 +363,68 @@ def find_best_valuations(all_possible_valuations: List[List[Dict[str, bool]]]) -
     return list(days_taken.values())
 
 
+def get_days_by_period(semester: str, all_course_schedules: Dict[str, Dict[str, List[str]]]) -> Dict[str, List[str]]:
+    """
+    Return all days booked for one semester separeted by period.
+    """
+    days_per_period = {}
+    for name, days in all_course_schedules[semester].items():
+        name, period = name.split("_")
+        if period not in days_per_period:
+            days_per_period[period] = []
+        days_per_period[period].extend(days)
+
+    return days_per_period
+
+
+def truncate_to_4hours_per_week(all_courses_schedules: Dict[str, Dict[str, List[str]]],
+                                professor_valuation: Dict[str, List[Dict[str, bool]]]) -> Dict[str, Dict[str,
+                                                                                                         List[str]]]:
+    """
+    Take all_courses_schedules and loop through all courses booked days and if the total of booked days it's
+    more than 2 days(the course it's taught for 2 hours each day we need 4 hours in total) remove all
+    excess days. If the total of booked days it's less than 2 days add more days until reach the limit.
+    """
+    total_days_taught = {}
+
+    # calculate the total of days(each day a course is taught for 2 hours) that a course is taught
+    # and if a course is taught for more than 2 days remove those extra days
+    for semester, possible_schedules in all_courses_schedules.items():
+        name = ""
+        all_days = []
+        for course_name, days in possible_schedules.items():
+            all_days.extend(days)
+            name = course_name.split("_")[0]
+
+            if name not in total_days_taught:
+                total_days_taught[name] = [semester, 0]
+            total_days_taught[name][1] += len(days)
+
+            while total_days_taught[name][1] > 2:
+                possible_schedules[course_name].pop()
+                total_days_taught[name][1] -= 1
+
+    # check if a course is being taught for less than 2 days if so add one more day
+    for course_name, semester_n_total_hours in total_days_taught.items():
+        semester, total_hours = semester_n_total_hours[0], semester_n_total_hours[1]
+        if total_hours < 2:
+            days_booked = get_days_by_period(semester, all_courses_schedules)
+
+            for possible_day in ("segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira"):
+                # need to check for both periods because one of these periods can have already all
+                # days booked
+                for period in ('1', '2'):
+                    name = f"{course_name}_{period}"
+                    if total_hours < 2 and possible_day not in days_booked[period] and \
+                       not is_professor_schedule_colliding(name, possible_day, professor_valuation,
+                                                           all_courses_schedules):
+
+                        total_hours += 1
+                        all_courses_schedules[semester][name].append(possible_day)
+
+    return all_courses_schedules
+
+
 def main():
     courses_list = parse_input(multiline_input("INPUT: "))
 
@@ -373,13 +435,14 @@ def main():
     valuations_for_professor_restriction = {name: satisfiable_valuations(formula)
                                             for name, formula in professor_restriction_formula(courses_list).items()}
 
-    courses_schedules = create_courses_schedules(valuations_for_period_restriction)
+    courses_schedules = create_courses_schedules(find_best_valuations(valuations_for_period_restriction))
     remove_professors_collisions(valuations_for_professor_restriction, courses_schedules)
+    courses_schedules = truncate_to_4hours_per_week(courses_schedules, valuations_for_professor_restriction)
+
+    end = time.time()
 
     print("\nOUTPUT:")
     print_solution(courses_schedules)
-
-    end = time.time()
 
     print(f"\nTOTAL TIME: {end - start}")
 
