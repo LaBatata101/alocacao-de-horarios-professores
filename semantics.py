@@ -120,3 +120,69 @@ def is_satisfiable(formula):
     atoms_names = {a.name for a in atoms(formula)}
     list_atoms = atoms_names - set(interpretation.keys())
     return sat(formula, list_atoms, interpretation)
+
+
+def remove_implication(formula):
+    if isinstance(formula, Atom):
+        return formula
+
+    if isinstance(formula, Not):
+        return Not(remove_implication(formula.inner))
+
+    if isinstance(formula, Implies):
+        left = remove_implication(formula.left)
+        right = remove_implication(formula.right)
+        return Or(Not(left), right)
+
+    if isinstance(formula, (And, Or)):
+        formula.left = remove_implication(formula.left)
+        formula.right = remove_implication(formula.right)
+        return formula
+
+
+def is_literal(formula):
+    return (isinstance(formula, Not) and isinstance(formula.inner, Atom)) or isinstance(formula, Atom)
+
+
+def negation_normal_form(formula):
+    if is_literal(formula):
+        return formula
+
+    if isinstance(formula, (And, Or)):
+        formula.left = negation_normal_form(formula.left)
+        formula.right = negation_normal_form(formula.right)
+        return formula
+
+    if isinstance(formula, Not):
+        inner = formula.inner
+        if isinstance(inner, Not):
+            return negation_normal_form(inner)
+        elif isinstance(inner, And):
+            return Or(negation_normal_form(Not(inner.left)), negation_normal_form(Not(inner.right)))
+        elif isinstance(inner, Or):
+            return And(negation_normal_form(Not(inner.left)), negation_normal_form(Not(inner.right)))
+
+
+def distributive(formula):
+    if is_literal(formula):
+        return formula
+
+    if isinstance(formula, And):
+        formula.left = distributive(formula.left)
+        formula.right = distributive(formula.right)
+        return formula
+
+    if isinstance(formula, Or):
+        left_subformula = distributive(formula.left)
+        right_subformula = distributive(formula.right)
+        if isinstance(left_subformula, And):
+            return And(distributive(Or(left_subformula.left, left_subformula)),
+                       distributive(Or(left_subformula.right, right_subformula)))
+        if isinstance(right_subformula, And):
+            return And(distributive(Or(left_subformula, right_subformula.left)),
+                       distributive(Or(left_subformula, right_subformula.right)))
+        return Or(left_subformula, right_subformula)
+
+
+def cnf(formula):
+    return distributive(negation_normal_form(remove_implication(formula)))
