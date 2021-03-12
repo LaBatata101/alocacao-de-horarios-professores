@@ -156,7 +156,7 @@ def negation_normal_form(formula):
     if isinstance(formula, Not):
         inner = formula.inner
         if isinstance(inner, Not):
-            return negation_normal_form(inner)
+            return negation_normal_form(inner.inner)
         elif isinstance(inner, And):
             return Or(negation_normal_form(Not(inner.left)), negation_normal_form(Not(inner.right)))
         elif isinstance(inner, Or):
