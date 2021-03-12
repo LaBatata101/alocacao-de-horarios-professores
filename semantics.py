@@ -6,6 +6,7 @@ in propositional logic.
 
 from formula import Atom, Implies, Not, And, Or
 from functions import atoms, valuations
+from collections import defaultdict
 
 
 def truth_value(formula, interpretation):
@@ -156,7 +157,7 @@ def negation_normal_form(formula):
     if isinstance(formula, Not):
         inner = formula.inner
         if isinstance(inner, Not):
-            return negation_normal_form(inner)
+            return negation_normal_form(inner.inner)
         elif isinstance(inner, And):
             return Or(negation_normal_form(Not(inner.left)), negation_normal_form(Not(inner.right)))
         elif isinstance(inner, Or):
@@ -186,3 +187,55 @@ def distributive(formula):
 
 def cnf(formula):
     return distributive(negation_normal_form(remove_implication(formula)))
+
+
+def has_one_literals_pair(c1, c2):
+    count_pairs = defaultdict(lambda: 0)
+    for c in c1:
+        if isinstance(c, Atom) and Not(c) in c2:
+            count_pairs[c] += 1
+        elif isinstance(c, Not) and c.inner in c2:
+            count_pairs[c] += 1
+    return sum(count_pairs.values()) == 1
+
+
+def res(clause1, clause2):
+    c1 = clause1.copy()
+    c2 = clause2.copy()
+    for c in c1:
+        if isinstance(c, Atom) and Not(c) in c2:
+            c1.remove(c)
+            c2.remove(Not(c))
+        elif isinstance(c, Not) and c.inner in c2:
+            c1.remove(c)
+            c2.remove(c.inner)
+    return c1 + c2
+
+
+def find_interpretation(clauses):
+    valuation = {}
+    for clause in clauses:
+        for literal in clause:
+            if isinstance(literal, Atom):
+                valuation.update({literal.name: True})
+            elif isinstance(literal, Not):
+                valuation.update({literal.inner.name: False})
+    return valuation
+
+
+def resolution(clauses):  # clauses -> [[p, s, r], [~s, r], [~p], [~r]]
+    new_clauses = []
+    index = 0
+    while True:
+        for i in range(index, len(clauses)):
+            for j in range(len(clauses)):
+                if has_one_literals_pair(clauses[i], clauses[j]):
+                    resolvent = res(clauses[i], clauses[j])
+                    if not resolvent:
+                        return False
+                    new_clauses.append(resolvent)
+        if not new_clauses:
+            return find_interpretation(clauses)
+        index = len(clauses) - 1
+        clauses.extend(new_clauses)
+        new_clauses.clear()
