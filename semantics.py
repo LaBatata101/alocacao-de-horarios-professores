@@ -7,6 +7,7 @@ in propositional logic.
 from formula import Atom, Implies, Not, And, Or
 from functions import atoms, valuations
 from collections import defaultdict
+from statistics import mode
 
 
 def truth_value(formula, interpretation):
@@ -242,3 +243,89 @@ def resolution(clauses):  # clauses -> [[p, s, r], [~s, r], [~p], [~r]]
             if clause not in clauses:
                 clauses.append(clause)
         new_clauses.clear()
+
+
+def dpll(clauses):
+    return dpll_check(clauses, {})
+
+
+def has_unit_clause(clauses):
+    for clause in clauses:
+        if len(clause) == 1:
+            return True
+    return False
+
+
+def remove_clauses_with_literal(clauses, literal):
+    for clause in clauses:
+        if literal in clause:
+            clauses.remove(clause)
+    return clauses
+
+
+def remove_complement_literal(clauses, literal):
+    for clause in clauses:
+        if isinstance(literal, Atom) and Not(literal) in clause:
+            clause.remove(Not(literal))
+        elif isinstance(literal, Not) and literal.inner in clause:
+            clause.remove(literal.inner)
+    return clauses
+
+
+def unit_propagation(clauses, valuation):
+    while has_unit_clause(clauses):
+        literal = get_atomic(clauses)
+
+        if isinstance(literal, Atom):
+            valuation[literal.name] = True
+        elif isinstance(literal, Not):
+            valuation[literal.inner.name] = False
+
+        clauses = remove_clauses_with_literal(clauses, literal)
+        clauses = remove_complement_literal(clauses, literal)
+    return clauses, valuation
+
+
+def get_atomic(clauses):
+    # return clauses[0][0]
+    smallest_clause_list = []
+    no_empty_clauses = [clause for clause in clauses if clause]
+    if len(no_empty_clauses) == 1:
+        return no_empty_clauses[0][0]
+
+    for i in range(len(no_empty_clauses) - 1):
+        if len(no_empty_clauses[i]) < len(no_empty_clauses[i + 1]):
+            smallest_clause_list.extend(no_empty_clauses[i])
+        else:
+            smallest_clause_list.extend(no_empty_clauses[i + 1])
+
+    return mode(smallest_clause_list)  # get the most common literal
+
+
+def has_only_empty_clauses(clauses):
+    for clause in clauses:
+        if clause != []:
+            return False
+    return True
+
+
+def dpll_check(clauses, valuation):
+    clauses, valuation = unit_propagation(clauses, valuation)
+    if not clauses:
+        return valuation
+
+    if has_only_empty_clauses(clauses):
+        return False
+
+    atomic = get_atomic(clauses)
+    clauses1 = clauses + [[atomic]]
+    if isinstance(atomic, Not):
+        clauses2 = clauses + [[atomic.inner]]
+    else:
+        clauses2 = clauses + [[Not(atomic)]]
+    result = dpll_check(clauses1, valuation)
+
+    if result:
+        return result
+
+    return dpll_check(clauses2, valuation)
