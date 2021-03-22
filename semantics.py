@@ -269,9 +269,18 @@ def has_unit_clause(clauses):
     return False
 
 
-def remove_clauses_with_literal(clauses, literal):
-    for clause in clauses:
+def set_valuation(literal, valuation):
+    if isinstance(literal, Atom):
+        valuation[literal.name] = True
+    elif isinstance(literal, Not):
+        valuation[literal.inner.name] = False
+
+
+def remove_clauses_with_literal(clauses, literal, valuation):
+    for clause in clauses[:]:
         if literal in clause:
+            for l in clause:
+                set_valuation(l, valuation)
             clauses.remove(clause)
     return clauses
 
