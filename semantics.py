@@ -190,6 +190,19 @@ def cnf(formula):
     return distributive(negation_normal_form(remove_implication(formula)))
 
 
+def cnf_clausal(formula):
+    if is_literal(formula):
+        return [[formula]]
+
+    if isinstance(formula, Or):
+        return [list(atoms(formula))]
+
+    if isinstance(formula, And):
+        left = cnf_clausal(formula.left)
+        right = cnf_clausal(formula.right)
+        return left + right
+
+
 def has_one_literals_pair(c1, c2):
     count_pairs = defaultdict(lambda: 0)
     for c in c1:
