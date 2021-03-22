@@ -294,16 +294,19 @@ def remove_complement_literal(clauses, literal):
     return clauses
 
 
+def get_literal(clauses):
+    for clause in clauses:
+        if len(clause) == 1:
+            return clause[0]
+    return None
+
 def unit_propagation(clauses, valuation):
     while has_unit_clause(clauses):
-        literal = get_atomic(clauses)
+        literal = get_literal(clauses)
 
-        if isinstance(literal, Atom):
-            valuation[literal.name] = True
-        elif isinstance(literal, Not):
-            valuation[literal.inner.name] = False
+        set_valuation(literal, valuation)
 
-        clauses = remove_clauses_with_literal(clauses, literal)
+        clauses = remove_clauses_with_literal(clauses, literal, valuation)
         clauses = remove_complement_literal(clauses, literal)
     return clauses, valuation
 
