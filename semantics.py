@@ -338,7 +338,7 @@ def dpll_check(clauses, valuation):
     if not clauses:
         return valuation
 
-    if has_only_empty_clauses(clauses):
+    if [] in clauses:
         return False
 
     atomic = get_atomic(clauses)
