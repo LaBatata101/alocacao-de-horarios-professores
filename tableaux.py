@@ -111,10 +111,10 @@ class Tableaux:
                 self.__was_formula_processed_lookup.append(is_literal(formula.right))
 
         elif isinstance(formula, Not) and isinstance(formula.inner, And):
-            self.__track_branch.append((self.__was_formula_processed_lookup.copy(), Not(formula.left)))
-            if formula.right not in self.formula_list:
-                self.formula_list.append(formula.right)
-                self.__was_formula_processed_lookup.append(is_literal(formula.right))
+            self.__track_branch.append((self.__was_formula_processed_lookup.copy(), Not(formula.inner.left)))
+            if formula.inner.right not in self.formula_list:
+                self.formula_list.append(formula.inner.right)
+                self.__was_formula_processed_lookup.append(is_literal(formula.inner.right))
 
         elif isinstance(formula, Implies):
             self.__track_branch.append((self.__was_formula_processed_lookup.copy(), Not(formula.left)))
