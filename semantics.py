@@ -189,12 +189,20 @@ def cnf(formula):
     return distributive(negation_normal_form(remove_implication(formula)))
 
 
+def get_all_literals(formula):
+    if is_literal(formula):
+        return {formula}
+
+    if isinstance(formula, Or):
+        return get_all_literals(formula.left).union(get_all_literals(formula.right))
+
+
 def cnf_clausal(formula):
     if is_literal(formula):
         return [[formula]]
 
     if isinstance(formula, Or):
-        return [list(atoms(formula))]
+        return [list(get_all_literals(formula))]
 
     if isinstance(formula, And):
         left = cnf_clausal(formula.left)
@@ -269,10 +277,14 @@ def has_unit_clause(clauses):
 
 
 def set_valuation(literal, valuation):
-    if isinstance(literal, Atom):
-        valuation[literal.name] = True
-    elif isinstance(literal, Not):
-        valuation[literal.inner.name] = False
+    if literal < 0:
+        valuation[literal * -1] = False
+    else:
+        valuation[literal] = True
+    # if isinstance(literal, Atom):
+        # valuation[literal.name] = True
+    # elif isinstance(literal, Not):
+        # valuation[literal.inner.name] = False
 
 
 def remove_clauses_with_literal(clauses, literal, valuation):
@@ -286,10 +298,14 @@ def remove_clauses_with_literal(clauses, literal, valuation):
 
 def remove_complement_literal(clauses, literal):
     for clause in clauses:
-        if isinstance(literal, Atom) and Not(literal) in clause:
-            clause.remove(Not(literal))
-        elif isinstance(literal, Not) and literal.inner in clause:
-            clause.remove(literal.inner)
+        if literal > 0 and -literal in clause:
+            clause.remove(-literal)
+        elif literal < 0 and (literal * -1) in clause:
+            clause.remove(literal * -1)
+        # if isinstance(literal, Atom) and Not(literal) in clause:
+            # clause.remove(Not(literal))
+        # elif isinstance(literal, Not) and literal.inner in clause:
+            # clause.remove(literal.inner)
     return clauses
 
 
@@ -343,10 +359,12 @@ def dpll_check(clauses, valuation):
 
     atomic = get_atomic(clauses)
     clauses1 = clauses + [[atomic]]
-    if isinstance(atomic, Not):
-        clauses2 = clauses + [[atomic.inner]]
-    else:
-        clauses2 = clauses + [[Not(atomic)]]
+
+    clauses2 = clauses + [[atomic * -1]]
+    # if isinstance(atomic, Not):
+        # clauses2 = clauses + [[atomic.inner]]
+    # else:
+        # clauses2 = clauses + [[Not(atomic)]]
     result = dpll_check(clauses1, valuation)
 
     if result:
