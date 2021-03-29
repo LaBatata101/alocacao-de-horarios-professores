@@ -32,9 +32,9 @@ class CNFDimacsParser:
                 if atom == 0:
                     break
                 elif atom < 0:
-                    atoms.append(Not(Atom(str(atom * -1))))
+                    atoms.append(atom * -1)
                 else:
-                    atoms.append(Atom(str(atom)))
+                    atoms.append(atom)
             result.append(atoms)
         return result
 
