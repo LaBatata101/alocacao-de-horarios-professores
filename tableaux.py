@@ -6,8 +6,14 @@ from collections import OrderedDict
 class Tableaux:
     def __init__(self, *formula_list):
         self.formula_list = self.sort_formulas(formula_list)
-        self.__was_formula_processed_lookup = [is_literal(formula) for formula in self.formula_list]
+        self.__was_formula_processed_lookup = {formula: is_literal(formula) for formula in self.formula_list}
         self.__track_branch = []
+
+    def get_unprocessed_formula(self):
+        for formula in self.formula_list:
+            if not self.__was_formula_processed_lookup[formula]:
+                return formula
+        return False
 
     def solve(self):
         """
@@ -16,15 +22,23 @@ class Tableaux:
         Return a valuation that makes the set of formulas true.
         """
         valuation = {}
-        i = 0
-        while False in self.__was_formula_processed_lookup:
+        # i = 0
+        for i, formula in enumerate(self.formula_list):
             formula = self.formula_list[i]
+            # formula = self.get_unprocessed_formula()
+            # print(formula)
+            # if formula is False:
+                # break
+            if not self.__was_formula_processed_lookup[formula] and not self.proccess_formula(formula):
+                return False
+        # for i, formula in enumerate(self.formula_list):
+            # formula = self.formula_list[i]
 
-            if not self.__was_formula_processed_lookup[i]:
-                if not self.proccess_formula(formula):
-                    return False
+            # if not self.__was_formula_processed_lookup[formula]:
+                # if not self.proccess_formula(formula):
+                    # return False
 
-            i = (i + 1) % len(self.formula_list)
+            # i = (i + 1) % len(self.formula_list)
 
         for formula in self.formula_list:
             if is_literal(formula):
@@ -60,9 +74,11 @@ class Tableaux:
         """
         for i in range(len(formula_list) - 1):
             if isinstance(formula_list[i], Atom):
-                return Not(formula_list[i]) in formula_list[i + 1:]
+                if Not(formula_list[i]) in formula_list[i + 1:]:
+                    return True
             elif isinstance(formula_list[i], Not) and isinstance(formula_list[i].inner, Atom):
-                return formula_list[i].inner in formula_list[i + 1:]
+                if formula_list[i].inner in formula_list[i + 1:]:
+                    return True
         return False
 
     def proccess_formula(self, formula):
@@ -70,68 +86,83 @@ class Tableaux:
         Return False if there's a complement in 'self.formula_list' and 'self.track_branch' is empty.
         Return True otherwise.
         """
-        index = self.formula_list.index(formula)
-        self.__was_formula_processed_lookup[index] = True
+        # index = self.formula_list.index(formula)
+        # del self.formula_list[index]
+        self.__was_formula_processed_lookup[formula] = True
+        # del self.__was_formula_processed_lookup[formula]
 
         if isinstance(formula, And):
             if formula.left not in self.formula_list:
                 self.formula_list.append(formula.left)
-                self.__was_formula_processed_lookup.append(is_literal(formula.left))
+                self.__was_formula_processed_lookup[formula.left] = is_literal(formula.left)
             if formula.right not in self.formula_list:
                 self.formula_list.append(formula.right)
-                self.__was_formula_processed_lookup.append(is_literal(formula.right))
+                self.__was_formula_processed_lookup[formula.right] = is_literal(formula.right)
 
         elif isinstance(formula, Not) and isinstance(formula.inner, Or):
             inner = formula.inner
-            if Not(inner.left) not in self.formula_list:
-                self.formula_list.append(Not(inner.left))
-                self.__was_formula_processed_lookup.append(is_literal(Not(inner.left)))
-            if Not(inner.right) not in self.formula_list:
-                self.formula_list.append(Not(inner.right))
-                self.__was_formula_processed_lookup.append(is_literal(Not(inner.right)))
+            left_formula = Not(inner.left)
+            right_formula = Not(inner.right)
+
+            if left_formula not in self.formula_list:
+                self.formula_list.append(left_formula)
+                self.__was_formula_processed_lookup[left_formula] = is_literal(left_formula)
+
+            if right_formula not in self.formula_list:
+                self.formula_list.append(right_formula)
+                self.__was_formula_processed_lookup[right_formula] = is_literal(right_formula)
 
         elif isinstance(formula, Not) and isinstance(formula.inner, Implies):
             inner = formula.inner
-            if inner.left not in self.formula_list:
-                self.formula_list.append(inner.left)
-                self.__was_formula_processed_lookup.append(is_literal(inner.left))
-            if Not(inner.right) not in self.formula_list:
-                self.formula_list.append(Not(inner.right))
-                self.__was_formula_processed_lookup.append(is_literal(Not(inner.right)))
+            left_formula = inner.left
+            right_formula = Not(inner.right)
+
+            if left_formula not in self.formula_list:
+                self.formula_list.append(left_formula)
+                self.__was_formula_processed_lookup[left_formula] = is_literal(left_formula)
+
+            if right_formula not in self.formula_list:
+                self.formula_list.append(right_formula)
+                self.__was_formula_processed_lookup[right_formula] = is_literal(right_formula)
 
         elif isinstance(formula, Not) and isinstance(formula.inner, Not):
             if formula.inner.inner not in self.formula_list:
                 self.formula_list.append(formula.inner.inner)
-                self.__was_formula_processed_lookup.append(is_literal(formula.inner.inner))
+                self.__was_formula_processed_lookup[formula.inner.inner] = is_literal(formula.inner.inner)
 
         elif isinstance(formula, Or):
             self.__track_branch.append((self.__was_formula_processed_lookup.copy(), formula.left))
+
             if formula.right not in self.formula_list:
                 self.formula_list.append(formula.right)
-                self.__was_formula_processed_lookup.append(is_literal(formula.right))
+                self.__was_formula_processed_lookup[formula.right] = is_literal(formula.right)
 
         elif isinstance(formula, Not) and isinstance(formula.inner, And):
             self.__track_branch.append((self.__was_formula_processed_lookup.copy(), Not(formula.inner.left)))
-            if formula.inner.right not in self.formula_list:
-                self.formula_list.append(formula.inner.right)
-                self.__was_formula_processed_lookup.append(is_literal(formula.inner.right))
+
+            if Not(formula.inner.right) not in self.formula_list:
+                self.formula_list.append(Not(formula.inner.right))
+                self.__was_formula_processed_lookup[Not(formula.inner.right)] = is_literal(Not(formula.inner.right))
 
         elif isinstance(formula, Implies):
             self.__track_branch.append((self.__was_formula_processed_lookup.copy(), Not(formula.left)))
+
             if formula.right not in self.formula_list:
                 self.formula_list.append(formula.right)
-                self.__was_formula_processed_lookup.append(is_literal(formula.right))
+                self.__was_formula_processed_lookup[formula.right] = is_literal(formula.right)
 
-        while self.__has_complement(self.formula_list):
+        while self.__has_complement(list(self.__was_formula_processed_lookup)):
             if not self.__track_branch:
                 return False
 
             was_processed_list_old, formula = self.__track_branch.pop(-1)
 
-            del self.formula_list[len(was_processed_list_old):]
-
+            self.formula_list = list(was_processed_list_old.keys())
             self.formula_list.append(formula)
+
             self.__was_formula_processed_lookup = was_processed_list_old
-            self.__was_formula_processed_lookup.append(is_literal(formula))
+            self.__was_formula_processed_lookup[formula] = is_literal(formula)
+
+        # self.formula_list = self.sort_formulas(self.formula_list)
 
         return True
