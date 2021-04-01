@@ -1,0 +1,67 @@
+BENCHMARK is_satisfiable
+Formula with 200 atoms!
+Atingiu limite de 5 minutos!
+Formula with 366 atoms!
+Atingiu limite de 5 minutos!
+Formula with 576 atoms!
+Atingiu limite de 5 minutos!
+Formula with 830 atoms!
+Atingiu limite de 5 minutos!
+Formula with 1128 atoms!
+Atingiu limite de 5 minutos!
+Formula with 1470 atoms!
+Atingiu limite de 5 minutos!
+Formula with 1856 atoms!
+Atingiu limite de 5 minutos!
+Formula with 2286 atoms!
+Atingiu limite de 5 minutos!
+Formula with 2760 atoms!
+Atingiu limite de 5 minutos!
+Formula with 28910 atoms!
+Atingiu limite de 5 minutos!
+
+BENCHMARK DPLL
+Formula with 200 atoms!
+Done in 0.0010454654693603516 seconds!
+Formula with 366 atoms!
+Done in 0.017789602279663086 seconds!
+Formula with 576 atoms!
+Done in 0.07808351516723633 seconds!
+Formula with 830 atoms!
+Done in 0.021572351455688477 seconds!
+Formula with 1128 atoms!
+Done in 0.03461575508117676 seconds!
+Formula with 1470 atoms!
+Done in 0.05249476432800293 seconds!
+Formula with 1856 atoms!
+Done in 0.0761117935180664 seconds!
+Formula with 2286 atoms!
+Done in 0.10620689392089844 seconds!
+Formula with 2760 atoms!
+Done in 0.14408659934997559 seconds!
+Formula with 28910 atoms!
+Done in 7.01766037940979 seconds!
+TOTAL TIME: 7.549667119979858 AVG TIME: 0.7549667119979858
+
+BENCHMARK PySat
+Formula with 200 atoms!
+Done in 3.790855407714844e-05 seconds!
+Formula with 366 atoms!
+Done in 5.698204040527344e-05 seconds!
+Formula with 576 atoms!
+Done in 0.0001430511474609375 seconds!
+Formula with 830 atoms!
+Done in 6.890296936035156e-05 seconds!
+Formula with 1128 atoms!
+Done in 8.463859558105469e-05 seconds!
+Formula with 1470 atoms!
+Done in 8.368492126464844e-05 seconds!
+Formula with 1856 atoms!
+Done in 9.870529174804688e-05 seconds!
+Formula with 2286 atoms!
+Done in 0.00010085105895996094 seconds!
+Formula with 2760 atoms!
+Done in 0.0001246929168701172 seconds!
+Formula with 28910 atoms!
+Done in 0.00038361549377441406 seconds!
+TOTAL TIME: 0.0011830329895019531 AVG TIME: 0.00011830329895019531
