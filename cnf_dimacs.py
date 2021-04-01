@@ -38,26 +38,36 @@ class CNFDimacsParser:
             result.append(atoms)
         return result
 
-    def to_cnf_dimacs(self, cnf_formula):
-        atomic_lookup = {}
+    def to_cnf_dimacs(self, cnf_formula, literal_lookup):
+        # atomic_lookup = {}
         atomics = set()
         result = []
 
-        for clause in cnf_formula:
-            for atomic in clause:
-                atomics.add(atomic)
+        if not literal_lookup:
+            for clause in cnf_formula:
+                for literal in clause:
+                    atomics.add(literal)
 
-        for i, atomic in enumerate(atomics):
-            i += 1
-            if isinstance(atomic, Not):
-                atomic_lookup[atomic] = -i
-            else:
-                atomic_lookup[atomic] = i 
+            for i, literal in enumerate(atomics):
+                i += 1
+                if isinstance(literal, Not):
+                    if literal.inner in literal_lookup:
+                        literal_lookup[literal] = -literal_lookup[literal.inner]
+                    else:
+                        literal_lookup[literal] = -i
+                else:
+                    if Not(literal) in literal_lookup:
+                        literal_lookup[literal] = literal_lookup[Not(literal)] * -1
+                    else:
+                        literal_lookup[literal] = i
 
         for clause in cnf_formula:
             atomics = []
-            for atomic in clause:
-                atomics.append(atomic_lookup[atomic])
+            for literal in clause:
+                atomics.append(literal_lookup[literal])
             result.append(atomics)
+
+        self.total_atoms = len(atomics)
+        self.total_clauses = len(clause)
 
         return result
