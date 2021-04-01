@@ -1,13 +1,6 @@
-import time
-
 from typing import Any, Dict, List, Union
 
-from pysat.solvers import Glucose3
-from cnf_dimacs import CNFDimacsParser
-from semantics import cnf, cnf_clausal, dpll
 from formula import And, Atom, Not, Or
-from tableaux import Tableaux
-from pprint import pprint
 
 
 class Course:
@@ -20,7 +13,7 @@ class Course:
         return f"{self.name}_{self.semester}_{self.professor}"
 
     def __repr__(self):
-        return f"Course({self.name}, {self.semester}, {self.professor}"
+        return f"Course({self.name}, {self.semester}, {self.professor})"
 
 
 def multiline_input(input_text="") -> List[str]:
@@ -241,73 +234,3 @@ def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> No
             if days:  # list of days is not empty
                 print(f"{get_course_period(course_name)} :: {', '.join(days)}")
         print()
-
-
-def main():
-    try:
-        qtd_periods = int(input("Digite a quantidade de horários: "))
-    except:
-        print("ERROR: Precisa ser um número inteiro positivo.")
-        exit(1)
-
-    courses_list = parse_input(multiline_input("INPUT: "))
-
-    parser = CNFDimacsParser()
-    period_restriction_cnf = []
-    professor_restriction_cnf = {}
-
-    period_restriction = period_restriction_for_all_semesters_formula(courses_list, qtd_periods)
-    professor_restriction = professor_restriction_formula(courses_list, qtd_periods)
-
-    for professor, formula in professor_restriction.items():
-        professor_restriction_cnf[professor] = parser.to_cnf_dimacs(cnf_clausal(cnf(formula)))
-
-    for formula in period_restriction:
-        period_restriction_cnf.extend(parser.to_cnf_dimacs(cnf_clausal(cnf(formula))))
-
-    # pprint(period_restriction_cnf)
-    # pprint(professor_restriction_cnf)
-    start = time.time()
-    period_valuation = dpll(period_restriction_cnf)
-
-    professor_valuation = {}
-    for professor, formula in professor_restriction_cnf.items():
-        professor_valuation[professor] = dpll(formula)
-    end = time.time()
-
-
-    print("\nDPLL OUTPUT:")
-
-    if not period_valuation or False in professor_valuation.values():
-        print("Não foi possivel alocar horários para os cursos com os dados fornercidos! Tente aumentar o número de horários.")
-    else:
-        pprint(period_valuation)
-        pprint(professor_valuation)
-
-    print(f"\nDPLL TOTAL TIME: {end - start}")
-
-
-    for professor, formula in professor_restriction_cnf.items():
-        glucose = Glucose3()
-        glucose.append_formula(formula)
-        glucose.solve()
-        professor_valuation[professor] = glucose.get_model()
-
-    glucose = Glucose3()
-    glucose.append_formula(period_restriction_cnf)
-
-    start = time.time()
-    print("PySat OUTPUT:")
-    if glucose.solve():
-        print(glucose.get_model())
-        pprint(professor_valuation)
-    else:
-        print("Não foi possivel alocar horários para os cursos com os dados fornercidos! Tente aumentar o número de horários.")
-
-    end = time.time()
-
-    print(f"PySat GLUCOSE3 TOTAL TIME: {end - start}")
-
-
-if __name__ == "__main__":
-    main()
