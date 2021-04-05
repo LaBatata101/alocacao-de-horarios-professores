@@ -1,5 +1,4 @@
 import time
-from pprint import pprint
 
 from alocacao import (multiline_input, parse_input,
                       period_restriction_for_all_semesters_formula,
@@ -18,7 +17,6 @@ def main():
     courses_list = parse_input(multiline_input("INPUT: "))
 
     parser = CNFDimacsParser()
-    professor_restriction_cnf = {}
 
     period_restriction = period_restriction_for_all_semesters_formula(courses_list, qtd_periods)
     professor_restriction = professor_restriction_formula(courses_list, qtd_periods)
@@ -30,20 +28,17 @@ def main():
 
     period_restriction_cnf = parser.to_cnf_dimacs(cnf_clauses, literal_lookup)
 
-    for professor, formula in professor_restriction.items():
-        professor_restriction_cnf[professor] = parser.to_cnf_dimacs(cnf_clausal(cnf(formula)), literal_lookup)
+    for formula in professor_restriction.values():
+        period_restriction_cnf.extend(parser.to_cnf_dimacs(cnf_clausal(cnf(formula)), literal_lookup))
 
     start = time.time()
     period_valuation = dpll(period_restriction_cnf)
 
-    professor_valuation = {}
-    for professor, formula in professor_restriction_cnf.items():
-        professor_valuation[professor] = dpll(formula)
     end = time.time()
 
     print("\nDPLL OUTPUT:")
 
-    if not period_valuation or False in professor_valuation.values():
+    if not period_valuation:
         print(("Não foi possivel alocar horários para os cursos com os dados fornercidos! "
                "Tente aumentar o número de horários."))
     else:
@@ -51,14 +46,6 @@ def main():
         for atomic, value in period_valuation.items():
             if value:
                 print(literal_lookup[atomic])
-
-        print("Horários Professores:")
-        for professor, valuation in professor_valuation.items():
-            print(professor)
-            for atomic, value in valuation.items():
-                if value:
-                    print(f"\t{literal_lookup[atomic]}")
-
     print(f"\nDPLL TOTAL TIME: {end - start}")
 
 
