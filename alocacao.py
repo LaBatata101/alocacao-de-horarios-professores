@@ -207,30 +207,7 @@ def professor_restriction_formula(courses: List[Course], qtd_periods: int) -> Di
             formulas[professor] = And(or_all(courses_with_same_professor[professor]),
                                       Not(and_all(courses_with_same_professor[professor])))
             continue
-        formulas[professor] = and_all([period_restriction(courses_with_same_professor[professor]), and_all(possible_periods[professor]),
+        formulas[professor] = and_all([period_restriction(courses_with_same_professor[professor]),
+                                       and_all(possible_periods[professor]),
                                        and_all(allow_course_in_one_period[professor])])
     return formulas
-
-
-def is_day_picked(day: str, courses_schedules: Dict[str, Dict[str, List[str]]], semester: str):
-    """
-    The day is picked if it appears two times in course_schedules for a specific semester.
-    """
-    all_booked_days = [day for days_booked in courses_schedules[semester].values() for day in days_booked]
-    return all_booked_days.count(day) == 2
-
-
-def get_course_period(course_name: str) -> str:
-    periods = {"1": "8-10", "2": "10-12"}
-    name, period = course_name.split("_")
-    return f"{periods[period]} -> {name}"
-
-
-def print_solution(all_courses_schedules: Dict[str, Dict[str, List[str]]]) -> None:
-    for semester, courses_schedules in all_courses_schedules.items():
-        print(f"s{semester}")
-        for course_name in sorted(courses_schedules.keys()):
-            days = courses_schedules[course_name]
-            if days:  # list of days is not empty
-                print(f"{get_course_period(course_name)} :: {', '.join(days)}")
-        print()
